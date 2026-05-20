@@ -1,1 +1,47 @@
-<p>login works!</p>
+<div class="min-h-screen flex items-center justify-center bg-blue-50">
+  <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-blue-100">
+    
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-blue-600">Portal del Paciente</h2>
+      <p class="text-gray-500 mt-2">Ingresa para ver tus citas y recetas médicas</p>
+    </div>
+
+    @if (mensajeError()) {
+      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+        <p class="font-bold">Error de Autenticación</p>
+        <p>{{ mensajeError() }}</p>
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+        <input 
+          type="email" 
+          formControlName="email"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          placeholder="tu@correo.com"
+        >
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Contraseña (Tu DNI)</label>
+        <input 
+          type="password" 
+          formControlName="password"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+          placeholder="••••••••"
+        >
+      </div>
+
+      <div>
+        <button 
+          type="submit" 
+          [disabled]="cargando()"
+          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300">
+          {{ cargando() ? 'Verificando...' : 'Iniciar Sesión' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

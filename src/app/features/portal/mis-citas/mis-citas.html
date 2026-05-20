@@ -1,1 +1,95 @@
-<p>mis-citas works!</p>
+<div class="min-h-screen bg-gray-50 font-sans">
+  
+  <!-- Navbar Top -->
+  <nav class="bg-blue-600 text-white shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🦷</span>
+        <span class="font-bold text-lg tracking-wide hidden sm:block">Clínica Navarro | Portal Paciente</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm font-medium hidden md:block">Hola, {{ paciente()?.nombres }}</span>
+        <button (click)="cerrarSesion()" class="bg-blue-700 hover:bg-blue-800 border border-blue-500 px-4 py-2 rounded text-sm font-bold transition-colors shadow-sm">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-6xl mx-auto px-4 py-8 animate-fade-in-up">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Mi Historial de Citas</h2>
+        <p class="text-gray-500 text-sm mt-1">Revisa tus próximas visitas o descarga tus recetas.</p>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <div class="flex justify-center py-20">
+        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else {
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        @for (cita of citas(); track cita.id) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+            
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center" 
+                 [ngClass]="{'bg-blue-50': cita.estado === 'PENDIENTE' || cita.estado === 'CONFIRMADA', 'bg-gray-50': cita.estado === 'REALIZADA', 'bg-red-50': cita.estado === 'CANCELADA'}">
+              <span class="font-bold text-gray-800">{{ cita.fechaHora | date:'dd MMM yyyy' }}</span>
+              <span class="text-xs font-bold px-2 py-1 rounded-full border bg-white shadow-sm"
+                    [ngClass]="{'text-blue-700 border-blue-200': cita.estado === 'CONFIRMADA', 'text-yellow-700 border-yellow-200': cita.estado === 'PENDIENTE', 'text-green-700 border-green-200': cita.estado === 'REALIZADA', 'text-red-700 border-red-200': cita.estado === 'CANCELADA'}">
+                {{ cita.estado }}
+              </span>
+            </div>
+            
+            <div class="p-5 space-y-4">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg">👨‍⚕️</div>
+                <div>
+                  <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Odontólogo</p>
+                  <p class="text-sm font-medium text-gray-800">{{ cita.odontologoNombreCompleto }}</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg">⏰</div>
+                <div>
+                  <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Hora</p>
+                  <p class="text-sm font-bold text-blue-700">{{ cita.fechaHora | date:'h:mm a' }}</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg">📝</div>
+                <div>
+                  <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Motivo</p>
+                  <p class="text-sm text-gray-600 line-clamp-2">{{ cita.motivo }}</p>
+                </div>
+              </div>
+            </div>
+
+            @if (cita.estado === 'REALIZADA') {
+              <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/80 hover:bg-blue-50 transition-colors">
+                <button (click)="descargarReceta(cita.id)" class="w-full text-blue-600 font-bold text-sm flex items-center justify-center gap-2">
+                  <span class="text-lg">📄</span> Descargar Receta Médica
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (citas().length === 0) {
+          <div class="col-span-full py-16 text-center bg-white rounded-xl border border-dashed border-gray-300">
+            <span class="text-5xl block mb-3">🏖️</span>
+            <h3 class="text-lg font-bold text-gray-700">Aún no tienes citas registradas</h3>
+          </div>
+        }
+
+      </div>
+    }
+  </main>
+</div>
