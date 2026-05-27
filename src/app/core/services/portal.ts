@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class PortalService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = 'http://217.216.94.194:8080/api';
 
   // Obtiene los datos del paciente (nombre, id)
   obtenerMiPerfil(usuarioId: number): Observable<any> {

@@ -5,7 +5,7 @@ import { Observable, tap } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/auth';
+  private readonly apiUrl = 'http://217.216.94.194:8080/api/auth';
   private readonly TOKEN_KEY = 'jwt_token';
 
   // NUEVO: Función auxiliar para comprobar si estamos en el navegador
