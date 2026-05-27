@@ -1,47 +1,206 @@
-<div class="min-h-screen flex items-center justify-center bg-blue-50">
-  <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-blue-100">
-    
-    <div class="text-center mb-8">
-      <h2 class="text-3xl font-bold text-blue-600">Portal del Paciente</h2>
-      <p class="text-gray-500 mt-2">Ingresa para ver tus citas y recetas médicas</p>
+<div class="min-h-screen grid grid-cols-1 md:grid-cols-2 font-sans bg-white">
+  <!-- =============================================== -->
+  <!-- COLUMNA IZQUIERDA - FORMULARIO CON IMAGEN DIFUMINADA -->
+  <!-- =============================================== -->
+  <div class="relative overflow-hidden">
+    <!-- IMAGEN DE FONDO DIFUMINADA -->
+    <div class="absolute inset-0 z-0 flex items-center justify-center">
+      <div
+        class="w-400 h-100 bg-contain bg-center bg-no-repeat opacity-4"
+        style="
+          background-image: url('https://static.vecteezy.com/system/resources/previews/005/495/317/non_2x/dental-clinic-logo-template-dental-care-logo-designs-tooth-teeth-smile-dentist-logo-vector.jpg');
+        "
+      ></div>
+      <div class="absolute inset-0 backdrop-blur-md bg-white/30 -z-10"></div>
     </div>
 
-    @if (mensajeError()) {
-      <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-        <p class="font-bold">Error de Autenticación</p>
-        <p>{{ mensajeError() }}</p>
+    <!-- CONTENIDO DEL FORMULARIO (va encima de la imagen) -->
+    <div class="relative z-10 flex flex-col justify-between p-8 sm:p-12 md:p-16 min-h-screen">
+      <!-- Logo / Marca -->
+      <div class="flex items-center gap-2">
+        <div class="text-blue-600 text-2xl flex items-center">
+          <svg
+            class="w-6 h-6 text-blue-600"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            ></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div>
+          <span class="text-xl font-bold text-gray-900 tracking-tight">CLINICA DENTAL</span>
+          <span class="block text-lg font-semibold text-blue-600 -mt-1">NAVARRO</span>
+        </div>
       </div>
-    }
 
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
-        <input 
-          type="email" 
-          formControlName="email"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          placeholder="tu@correo.com"
-        >
+      <!-- Formulario -->
+      <div class="w-full max-w-md mx-auto my-auto py-12">
+        <div class="text-left mb-8">
+          <p class="text-gray-500 text-sm font-medium">Welcome back</p>
+          <h1 class="text-3xl font-bold text-gray-900 mt-1">Sign In to your account</h1>
+        </div>
+
+        <!-- Mensaje de error -->
+        @if (mensajeError()) {
+          <div class="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl animate-slideDown">
+            <p class="text-red-600 text-sm text-center">{{ mensajeError() }}</p>
+          </div>
+        }
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <!-- Campo Email -->
+          <div class="relative">
+            <label
+              class="absolute -top-2.5 left-4 bg-white px-1 text-xs font-semibold text-blue-500 z-10"
+              >E-mail</label
+            >
+            <div class="relative flex items-center">
+              <input
+                type="email"
+                formControlName="email"
+                class="w-full px-4 py-3.5 border border-blue-500 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 bg-white/90 pr-10 transition-all"
+                placeholder="example@email.com"
+                autocomplete="email"
+              />
+              <span class="absolute right-4 text-gray-400 pointer-events-none">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5A2.25 2.25 0 0 1 2.25 17.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
+                  />
+                </svg>
+              </span>
+            </div>
+            @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+              <p class="mt-1 text-xs text-red-500">Ingresa un correo válido</p>
+            }
+          </div>
+
+          <!-- Campo Password -->
+          <div class="relative">
+            <label
+              class="absolute -top-2.5 left-4 bg-white px-1 text-xs font-medium text-gray-400 z-10 transition-all peer-focus:text-blue-500"
+              >Password</label
+            >
+            <div class="relative flex items-center">
+              <input
+                [type]="mostrarPassword() ? 'text' : 'password'"
+                formControlName="password"
+                class="w-full px-4 py-3.5 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white/90 pr-10 transition-all peer"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                (click)="togglePassword()"
+                class="absolute right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              </button>
+            </div>
+            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+              <p class="mt-1 text-xs text-red-500">La contraseña es requerida</p>
+            }
+          </div>
+
+          <!-- Botón Submit -->
+          <button
+            type="submit"
+            [disabled]="cargando()"
+            class="w-full py-3.5 px-4 rounded-lg text-white font-medium bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            @if (cargando()) {
+              <span class="flex items-center justify-center gap-2">
+                <span
+                  class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                ></span>
+                <span>Signing in...</span>
+              </span>
+            } @else {
+              Sign In
+            }
+          </button>
+        </form>
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Contraseña (Tu DNI)</label>
-        <input 
-          type="password" 
-          formControlName="password"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-          placeholder="••••••••"
-        >
-      </div>
+      <!-- Espacio vacío para mantener el equilibrio visual -->
+      <div></div>
+    </div>
+  </div>
 
+  <!-- =============================================== -->
+  <!-- COLUMNA DERECHA - IMAGEN PRINCIPAL -->
+  <!-- =============================================== -->
+  <div
+    class="hidden md:block relative overflow-hidden bg-cover bg-center"
+    style="
+      background-image: url('https://clinicadentalirenelopez.com/wp-content/uploads/2021/01/e82018f6-1233-44ad-b0f9-7895f816495e.jpeg');
+    "
+  >
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-600/30 to-indigo-900/50"></div>
+
+    <!-- Contenido sobre la imagen -->
+    <div class="absolute inset-0 flex flex-col justify-between p-12">
       <div>
-        <button 
-          type="submit" 
-          [disabled]="cargando()"
-          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300">
-          {{ cargando() ? 'Verificando...' : 'Iniciar Sesión' }}
-        </button>
+        <div class="flex items-center gap-2 text-white">
+          <svg
+            class="w-8 h-8"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+            ></path>
+          </svg>
+          <span class="text-xl font-semibold">CLINICA DENTAL</span>
+        </div>
       </div>
-    </form>
+      <div class="text-white">
+        <blockquote class="text-2xl font-light italic leading-relaxed">
+          "Tu sonrisa es nuestra prioridad"
+        </blockquote>
+        <p class="mt-4 text-blue-100 text-sm">— Clínica Dental Navarro</p>
+      </div>
+      <div class="flex gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
+        <span class="w-5 h-1.5 rounded-full bg-white"></span>
+      </div>
+    </div>
   </div>
 </div>

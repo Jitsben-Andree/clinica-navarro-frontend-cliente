@@ -6,31 +6,46 @@ import { Observable, tap } from 'rxjs';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:8080/api/auth';
+  private readonly TOKEN_KEY = 'jwt_token';
 
-  // Inicia sesión y guarda el ID del usuario en localStorage
+  // NUEVO: Función auxiliar para comprobar si estamos en el navegador
+  private isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  }
+
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap((response) => {
-        if (response && response.usuarioId) {
+        if (response && response.token && this.isBrowser()) {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+          localStorage.setItem('user_role_cliente', response.rol);
           localStorage.setItem('user_id_cliente', response.usuarioId.toString());
         }
       })
     );
   }
 
-  // Obtiene el ID del usuario logueado para usarlo en otros servicios
+  estaLogueado(): boolean {
+    if (!this.isBrowser()) return false;
+    return !!localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  obtenerToken(): string | null {
+    if (!this.isBrowser()) return null;
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
   getUsuarioId(): number | null {
+    if (!this.isBrowser()) return null;
     const id = localStorage.getItem('user_id_cliente');
     return id ? parseInt(id, 10) : null;
   }
 
-  // Limpia la sesión
   cerrarSesion(): void {
-    localStorage.removeItem('user_id_cliente');
-  }
-
-  // Verifica si el usuario está logueado
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('user_id_cliente');
+    if (this.isBrowser()) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem('user_role_cliente');
+      localStorage.removeItem('user_id_cliente');
+    }
   }
 }

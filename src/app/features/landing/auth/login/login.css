@@ -1,0 +1,71 @@
+/* Animaciones */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Forzar que los inputs no rompan la estética en focos automáticos */
+input:focus {
+  outline: none;
+}
+
+/* Transición fluida global */
+input,
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto focus para el label de password */
+input:focus ~ label,
+input.peer:focus {
+  color: #3b82f6;
+}
+
+/* Mejora para inputs en móvil (evita zoom automático en iOS) */
+@media (max-width: 640px) {
+  input,
+  button {
+    font-size: 16px;
+  }
+}
+
+/* Scrollbar limpio */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

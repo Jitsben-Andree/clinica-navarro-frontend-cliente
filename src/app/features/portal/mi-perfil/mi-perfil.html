@@ -1,1 +1,107 @@
-<p>mi-perfil works!</p>
+<main class="max-w-4xl mx-auto px-4 py-10 animate-fade-in-up">
+  
+  <div class="mb-8">
+    <h2 class="text-3xl font-bold text-gray-800">Mi Perfil y Seguridad</h2>
+    <p class="text-gray-500 mt-1">Mantén tus datos actualizados y tu cuenta protegida.</p>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center gap-6 mb-8">
+    <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md">
+      {{ usuario()?.nombres?.charAt(0) || 'P' }}
+    </div>
+    <div>
+      <h3 class="text-2xl font-bold text-gray-800">{{ usuario()?.nombres }} {{ usuario()?.apellidos }}</h3>
+      <p class="text-gray-500 font-medium mt-1">Documento (DNI): <span class="text-gray-800">{{ usuario()?.dni }}</span></p>
+      <p class="text-gray-500 text-sm">Fecha Nacimiento: {{ usuario()?.fechaNacimiento | date:'dd/MM/yyyy' }}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative">
+      <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2"><span>📱</span> Datos de Contacto</h4>
+      
+      @if (mensajeInfo()) {
+        <div class="mb-4 p-3 rounded-lg text-sm font-medium" [ngClass]="mensajeInfo()?.tipo === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'">
+          {{ mensajeInfo()?.texto }}
+        </div>
+      }
+
+      <form [formGroup]="perfilForm" (ngSubmit)="guardarDatosContacto()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Correo Electrónico</label>
+          <input formControlName="email" [readonly]="!editandoInfo()" type="email"
+                 class="w-full rounded-lg px-3 py-2 border transition-colors"
+                 [ngClass]="editandoInfo() ? 'bg-white border-blue-300 focus:ring-2 focus:ring-blue-500' : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'">
+          @if (perfilForm.get('email')?.invalid && perfilForm.get('email')?.touched) {
+            <p class="text-xs text-red-500 mt-1">Ingrese un correo válido.</p>
+          }
+        </div>
+        
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Teléfono Móvil</label>
+          <input formControlName="telefono" [readonly]="!editandoInfo()" type="text"
+                 class="w-full rounded-lg px-3 py-2 border transition-colors"
+                 [ngClass]="editandoInfo() ? 'bg-white border-blue-300 focus:ring-2 focus:ring-blue-500' : 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed'">
+        </div>
+        
+        <div class="pt-4 flex gap-3">
+          @if (!editandoInfo()) {
+            <button type="button" (click)="editandoInfo.set(true)" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors w-full shadow-sm">
+              Editar Datos
+            </button>
+          } @else {
+            <button type="button" (click)="editandoInfo.set(false)" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-50 transition-colors flex-1">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="perfilForm.invalid || cargandoInfo()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors flex-1 shadow-md disabled:bg-blue-300">
+              {{ cargandoInfo() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h4 class="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2"><span>🔒</span> Seguridad</h4>
+      <p class="text-xs text-gray-500 mb-4">Te recomendamos cambiar la contraseña asignada por defecto (Tu DNI).</p>
+      
+      @if (mensajePass()) {
+        <div class="mb-4 p-3 rounded-lg text-sm font-medium" [ngClass]="mensajePass()?.tipo === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'">
+          {{ mensajePass()?.texto }}
+        </div>
+      }
+
+      <form [formGroup]="passwordForm" (ngSubmit)="cambiarContrasena()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Contraseña Actual</label>
+          <input formControlName="passwordActual" type="password" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Nueva Contraseña</label>
+          <input formControlName="passwordNueva" type="password" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          @if (passwordForm.get('passwordNueva')?.hasError('minlength') && passwordForm.get('passwordNueva')?.touched) {
+            <p class="text-xs text-red-500 mt-1">La contraseña debe tener al menos 6 caracteres.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Confirmar Nueva Contraseña</label>
+          <input formControlName="confirmarPassword" type="password" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                 [ngClass]="{'border-red-400 focus:border-red-500 focus:ring-red-500': passwordForm.hasError('mismatch') && passwordForm.get('confirmarPassword')?.touched}">
+          @if (passwordForm.hasError('mismatch') && passwordForm.get('confirmarPassword')?.touched) {
+            <p class="text-xs text-red-500 mt-1 font-medium">Las contraseñas no coinciden.</p>
+          }
+        </div>
+        
+        <div class="pt-4">
+          <button type="submit" [disabled]="passwordForm.invalid || cargandoPass()" class="w-full bg-slate-800 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-slate-900 transition-colors shadow-md disabled:bg-slate-400">
+            {{ cargandoPass() ? 'Procesando...' : 'Cambiar Contraseña' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</main>
