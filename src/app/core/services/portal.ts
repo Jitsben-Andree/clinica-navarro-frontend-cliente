@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/env';
 
 @Injectable({ providedIn: 'root' })
 export class PortalService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://217.216.94.194:8080/api';
+  private API_URL = `${environment.apiUrl}`
+  private readonly apiUrl = `${this.API_URL}`;
 
   // Obtiene los datos del paciente (nombre, id)
   obtenerMiPerfil(usuarioId: number): Observable<any> {
@@ -43,4 +45,9 @@ export class PortalService {
   obtenerMiOdontograma(fichaId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/odontogramas/ficha/${fichaId}`);
   }
+
+  obtenerOdontologos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/empleados/odontologos`);
+  }
+
 }
