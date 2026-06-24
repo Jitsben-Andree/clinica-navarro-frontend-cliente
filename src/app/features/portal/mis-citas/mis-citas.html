@@ -1,154 +1,192 @@
-<main class="max-w-6xl mx-auto px-4 py-8 animate-fade-in-up">
+<div class="animate-fade-in-up pb-24">
   
-  <!-- Alerta flotante de éxito al agendar cita -->
-  @if (mensajeFeedback() && !mostrarModalCita() && mensajeFeedback()?.tipo === 'exito') {
-      <div class="fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg font-bold flex items-center gap-2 animate-fade-in-up z-50">
-          <span>✅</span> {{ mensajeFeedback()?.texto }}
-      </div>
-  }
-
-  <!-- Cabecera -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+  <!-- Encabezado de la página -->
+  <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
     <div>
-      <h2 class="text-2xl font-bold text-gray-800">Mi Historial de Citas</h2>
-      <p class="text-gray-500 text-sm mt-1">Revisa tus próximas visitas o descarga tus recetas médicas.</p>
+      <h2 class="text-3xl font-black text-slate-800 tracking-tight">Mis Citas Médicas</h2>
+      <p class="text-slate-500 font-medium mt-1">Administra tus reservas, revisa tu historial de atenciones y descarga tus recetas.</p>
     </div>
-    <button (click)="abrirModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-md transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
-      <span>➕</span> Agendar Nueva Cita
-    </button>
   </div>
 
-  <!-- Contenido Principal -->
   @if (cargando()) {
-    <div class="flex justify-center py-20">
-      <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div class="flex flex-col items-center justify-center py-32">
+      <div class="w-14 h-14 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+      <p class="mt-4 text-slate-500 font-medium animate-pulse">Sincronizando tu agenda...</p>
     </div>
   } @else {
     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Cuadrícula de Citas (Tarjetas Premium) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       
       @for (cita of citas(); track cita.id) {
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow relative">
+        <div class="bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 relative group">
           
-          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center" 
-               [ngClass]="{'bg-blue-50': cita.estado === 'PENDIENTE' || cita.estado === 'CONFIRMADA', 'bg-gray-50': cita.estado === 'REALIZADA', 'bg-red-50': cita.estado === 'CANCELADA'}">
-            <span class="font-bold text-gray-800">{{ cita.fechaHora | date:'dd MMM yyyy' }}</span>
-            <span class="text-xs font-bold px-2 py-1 rounded-full border shadow-sm bg-white"
-                  [ngClass]="{
-                      'text-blue-700 border-blue-200': cita.estado === 'CONFIRMADA', 
-                      'text-yellow-700 border-yellow-200': cita.estado === 'PENDIENTE', 
-                      'text-green-700 border-green-200': cita.estado === 'REALIZADA', 
-                      'text-red-700 border-red-200': cita.estado === 'CANCELADA'
-                  }">
-              {{ cita.estado }}
-            </span>
+          <!-- Franja de color superior según el estado -->
+          <div class="h-2 w-full"
+               [ngClass]="{
+                 'bg-blue-500': cita.estado === 'CONFIRMADA' || cita.estado === 'PENDIENTE',
+                 'bg-emerald-500': cita.estado === 'REALIZADA',
+                 'bg-rose-500': cita.estado === 'CANCELADA'
+               }">
           </div>
-          
-          <div class="p-5 space-y-4">
-            <div class="flex items-start gap-3">
-              <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg shadow-inner">👨‍⚕️</div>
-              <div>
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Especialista</p>
-                <p class="text-sm font-medium text-gray-800">{{ cita.odontologoNombreCompleto }}</p>
-              </div>
-            </div>
+
+          <div class="p-6 relative">
             
-            <div class="flex items-start gap-3">
-              <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg shadow-inner">⏰</div>
-              <div>
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Hora Programada</p>
-                <p class="text-sm font-bold text-blue-700">{{ cita.fechaHora | date:'h:mm a' }}</p>
-              </div>
+            <!-- Icono de fondo decorativo -->
+            <div class="absolute -right-4 -top-4 text-6xl opacity-5 pointer-events-none transform rotate-12 group-hover:scale-110 transition-transform">
+              {{ cita.estado === 'REALIZADA' ? '✅' : (cita.estado === 'CANCELADA' ? '❌' : '📅') }}
             </div>
-            
-            <div class="flex items-start gap-3">
-              <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-lg shadow-inner">📝</div>
-              <div>
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Motivo de Consulta</p>
-                <p class="text-sm text-gray-600 line-clamp-2">{{ cita.motivo }}</p>
+
+            <!-- Estado de la Cita -->
+            <div class="flex justify-between items-start mb-6">
+              <span class="px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase"
+                    [ngClass]="{
+                      'bg-blue-50 text-blue-700': cita.estado === 'CONFIRMADA',
+                      'bg-amber-50 text-amber-700': cita.estado === 'PENDIENTE',
+                      'bg-emerald-50 text-emerald-700': cita.estado === 'REALIZADA',
+                      'bg-rose-50 text-rose-700': cita.estado === 'CANCELADA'
+                    }">
+                {{ cita.estado === 'CONFIRMADA' ? 'EN SALA' : cita.estado }}
+              </span>
+            </div>
+
+            <!-- Fecha y Hora Principales -->
+            <div class="mb-6">
+              <h3 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">
+                {{ cita.fechaHora | date:'dd MMM' }}
+              </h3>
+              <p class="text-blue-600 font-bold text-lg">
+                {{ cita.fechaHora | date:'h:mm a' }}
+              </p>
+              <p class="text-xs font-medium text-slate-400 mt-1 uppercase">{{ cita.fechaHora | date:'yyyy' }}</p>
+            </div>
+
+            <!-- Detalles (Doctor y Motivo) -->
+            <div class="space-y-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+              <div class="flex gap-3">
+                <span class="text-xl">👨‍⚕️</span>
+                <div>
+                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Atendido por</p>
+                  <p class="text-sm font-bold text-slate-700">{{ cita.odontologoNombreCompleto }}</p>
+                </div>
+              </div>
+              <div class="w-full h-px bg-slate-200/60"></div>
+              <div class="flex gap-3">
+                <span class="text-xl">📝</span>
+                <div>
+                  <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Motivo</p>
+                  <p class="text-sm font-medium text-slate-600 line-clamp-2" [title]="cita.motivo">{{ cita.motivo }}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- BOTÓN PARA DESCARGAR RECETA (Solo visible si la cita está REALIZADA) -->
+          <!-- Botón de Descarga de Receta (Solo si está Realizada) -->
           @if (cita.estado === 'REALIZADA') {
-            <div class="px-5 py-3 border-t border-gray-100 bg-blue-50 hover:bg-blue-100 transition-colors">
-              <button (click)="descargarReceta(cita.id)" class="w-full text-blue-700 font-bold text-sm flex items-center justify-center gap-2">
-                <span class="text-lg">🖨️</span> Descargar e Imprimir Receta
+            <div class="px-6 py-4 bg-emerald-50/50 border-t border-emerald-100/50">
+              <button (click)="descargarReceta(cita.id)" class="w-full bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                <span class="text-lg">📄</span> Descargar Receta
               </button>
             </div>
           }
         </div>
       }
 
+      <!-- Estado Vacío -->
       @if (citas().length === 0) {
-        <div class="col-span-full py-16 text-center bg-white rounded-xl border border-dashed border-gray-300">
-          <span class="text-5xl block mb-3">🏥</span>
-          <h3 class="text-lg font-bold text-gray-700">Aún no tienes citas registradas</h3>
-          <p class="text-gray-500 text-sm mt-1">Anímate a agendar tu primera visita en nuestra clínica.</p>
+        <div class="col-span-full py-24 px-6 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">📆</div>
+          <h3 class="text-xl font-bold text-slate-800 mb-2">Aún no tienes citas programadas</h3>
+          <p class="text-slate-500 max-w-sm mx-auto">Agenda tu primera visita con nosotros usando el botón flotante de la esquina.</p>
         </div>
       }
 
     </div>
   }
-</main>
 
-<!-- ================= MODAL PARA AGENDAR CITA ================= -->
-@if (mostrarModalCita()) {
-  <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col animate-fade-in-up">
-      
-      <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <span class="text-blue-600">📅</span> Agendar Nueva Cita
-        </h3>
-        <button (click)="cerrarModal()" class="text-gray-400 hover:text-red-500 font-bold text-2xl transition-colors leading-none">&times;</button>
-      </div>
+  <!-- Botón Flotante para Agendar (FAB) -->
+  <button (click)="abrirModal()" class="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/40 hover:-translate-y-1 transition-all z-40 focus:outline-none focus:ring-4 focus:ring-blue-300">
+    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+  </button>
 
-      <div class="p-6 relative">
-        @if (mensajeFeedback()) {
-            <div class="mb-4 p-3 rounded-lg border text-sm font-medium flex items-start gap-2"
-                 [ngClass]="mensajeFeedback()?.tipo === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'">
-                <span class="text-lg leading-none mt-0.5">{{ mensajeFeedback()?.tipo === 'error' ? '⚠️' : '✅' }}</span>
-                <span>{{ mensajeFeedback()?.texto }}</span>
+  <!-- ================= MODAL PARA AGENDAR CITA (DISEÑO PREMIUM) ================= -->
+  @if (mostrarModalCita()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+        
+        <!-- Cabecera del Modal -->
+        <div class="px-8 py-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center relative overflow-hidden">
+          <div class="absolute -right-4 -top-4 text-blue-100 text-6xl opacity-50">🦷</div>
+          <h3 class="text-2xl font-black text-slate-800 tracking-tight relative z-10">Nueva Cita</h3>
+          <button (click)="cerrarModal()" class="text-slate-400 hover:text-rose-500 focus:outline-none transition-colors relative z-10">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <div class="p-8">
+          
+          <!-- Mensajes de Error o Éxito -->
+          @if (mensajeFeedback()) {
+            <div class="mb-6 p-4 rounded-xl text-sm font-bold flex items-start gap-3"
+                 [ngClass]="mensajeFeedback()?.tipo === 'error' ? 'bg-rose-50 text-rose-700 border border-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'">
+              <span class="text-lg leading-none">{{ mensajeFeedback()?.tipo === 'error' ? '❌' : '✅' }}</span>
+              <p>{{ mensajeFeedback()?.texto }}</p>
             </div>
-        }
-
-        <form [formGroup]="citaForm" id="formCitaPaciente" (ngSubmit)="guardarCita()" class="space-y-5">
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Especialista *</label>
-            <select formControlName="odontologoId" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:ring-blue-500 focus:border-blue-500 font-medium text-gray-700 bg-white transition-colors">
-              <option [value]="0" disabled>Seleccione el doctor...</option>
-              @for (doc of odontologos(); track doc.id) {
-                <option [value]="doc.id">Dr(a). {{ doc.nombres }} {{ doc.apellidos }} ({{ doc.especialidadNombre }})</option>
-              }
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Fecha y Hora *</label>
-            <input type="datetime-local" formControlName="fechaHora" [min]="minFechaHora" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:ring-blue-500 focus:border-blue-500 text-gray-700 bg-white transition-colors">
-          </div>
-          
-          <div>
-            <label class="block text-sm font-bold text-gray-700 mb-1">Motivo de Consulta *</label>
-            <textarea formControlName="motivo" rows="3" class="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 focus:ring-blue-500 focus:border-blue-500 text-gray-700 resize-none transition-colors" placeholder="Ej: Control de rutina, dolor en molar..."></textarea>
-          </div>
-        </form>
-      </div>
-
-      <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-        <button (click)="cerrarModal()" type="button" class="px-5 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-bold transition-colors">Cancelar</button>
-        <button form="formCitaPaciente" type="submit" [disabled]="citaForm.invalid || guardandoCita()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold shadow-md shadow-blue-200 transition-all disabled:bg-blue-300 disabled:shadow-none flex items-center gap-2">
-          @if (guardandoCita()) {
-              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Confirmando...
-          } @else {
-              Confirmar Reserva
           }
-        </button>
-      </div>
 
+          <form [formGroup]="citaForm" (ngSubmit)="guardarCita()" class="space-y-5">
+            
+            <!-- Selector de Doctor -->
+            <div>
+              <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">1. Selecciona tu Especialista</label>
+              <div class="relative">
+                <select formControlName="odontologoId" class="w-full border-2 border-slate-200 rounded-xl pl-11 pr-4 py-3.5 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-bold text-slate-700 transition-all appearance-none outline-none">
+                  <option [value]="0" disabled>-- Elige con quién atenderte --</option>
+                  @for (doc of odontologos(); track doc.id) {
+                    <option [value]="doc.id">Dr(a). {{ doc.nombres }} {{ doc.apellidos }}</option>
+                  }
+                </select>
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-lg">👨‍⚕️</div>
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Selector de Fecha y Hora -->
+            <div>
+              <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">2. Elige el Día y la Hora</label>
+              <div class="relative">
+                <input type="datetime-local" formControlName="fechaHora" [min]="minFechaHora" 
+                       class="w-full border-2 border-slate-200 rounded-xl pl-11 pr-4 py-3.5 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-bold text-slate-700 transition-all outline-none">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-lg">⏰</div>
+              </div>
+            </div>
+            
+            <!-- Motivo -->
+            <div>
+              <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">3. ¿Qué te duele o qué necesitas?</label>
+              <textarea formControlName="motivo" rows="3" 
+                        class="w-full border-2 border-slate-200 rounded-xl px-4 py-3.5 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-medium text-slate-700 transition-all outline-none resize-none" 
+                        placeholder="Ej: Siento dolor fuerte al morder, necesito una limpieza, etc."></textarea>
+            </div>
+
+            <!-- Botón Guardar -->
+            <div class="pt-4">
+              <button type="submit" [disabled]="citaForm.invalid || guardandoCita()" 
+                      class="w-full bg-blue-600 text-white font-black text-lg py-4 px-6 rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none flex justify-center items-center gap-2">
+                @if (guardandoCita()) {
+                  <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Procesando Reserva...
+                } @else {
+                  Confirmar mi Cita
+                }
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </div>
-  </div>
-}
+  }
+</div>
