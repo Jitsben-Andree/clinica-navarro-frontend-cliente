@@ -1,9 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { PortalService } from '../../../core/services/portal';
 import { AuthService } from '../../../core/services/auth';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+
+// Validador personalizado (fuera de la clase para que sea una función pura)
+export const matchPasswordsValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+  const password = control.get('passwordNueva')?.value;
+  const confirmPassword = control.get('confirmarPassword')?.value;
+  return password === confirmPassword ? null : { mismatch: true };
+};
 
 @Component({
   selector: 'app-mi-perfil',
@@ -25,20 +32,26 @@ export class PerfilComponent implements OnInit {
   mensajeInfo = signal<{tipo: 'exito'|'error', texto: string} | null>(null);
   mensajePass = signal<{tipo: 'exito'|'error', texto: string} | null>(null);
 
-  perfilForm = this.fb.group({
+  perfilForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     telefono: ['', Validators.required]
   });
 
+  // Aplicamos el validador cruzado al nivel del grupo (FormGroup)
   passwordForm = this.fb.group({
     passwordActual: ['', Validators.required],
     passwordNueva: ['', [Validators.required, Validators.minLength(6)]],
     confirmarPassword: ['', Validators.required]
-  }, { validators: this.passwordsMatchValidator });
+  }, { validators: matchPasswordsValidator });
 
   ngOnInit() {
-    const id = this.authService.getUsuarioId();
-    if (id) {
+    let id = this.authService.getUsuarioId();
+    if (!id && typeof window !== 'undefined') {
+      const storedId = localStorage.getItem('user_id_cliente');
+      id = storedId ? Number(storedId) : null;
+    }
+
+    if (id && !isNaN(id)) {
       this.cargarPerfil(id);
     } else {
       if (typeof window !== 'undefined') this.cerrarSesion();
@@ -46,19 +59,16 @@ export class PerfilComponent implements OnInit {
   }
 
   cargarPerfil(id: number) {
-    this.portalService.obtenerMiPerfil(id).subscribe(data => {
-      this.usuario.set(data);
-      this.perfilForm.patchValue({
-        email: data.email,
-        telefono: data.telefono
-      });
+    this.portalService.obtenerMiPerfil(id).subscribe({
+      next: (data) => {
+        this.usuario.set(data);
+        this.perfilForm.patchValue({
+          email: data.email,
+          telefono: data.telefono
+        });
+      },
+      error: () => this.mostrarMensaje('info', 'error', 'No se pudo cargar la información del perfil.')
     });
-  }
-
-  passwordsMatchValidator(form: FormGroup) {
-    const nueva = form.get('passwordNueva')?.value;
-    const confirmar = form.get('confirmarPassword')?.value;
-    return nueva === confirmar ? null : { mismatch: true };
   }
 
   guardarDatosContacto() {

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { PortalService } from '../../../core/services/portal';
@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth';
 @Component({
   selector: 'app-mis-citas',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './mis-citas.html'
 })
 export class MisCitasComponent implements OnInit {
@@ -19,38 +19,37 @@ export class MisCitasComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  // Estados visuales
+  // Estados visuales principales
   cargando = signal<boolean>(true);
   paciente = signal<any>(null);
   citas = signal<any[]>([]);
 
-  // Estados del modal
+  // Estados del modal y UX
   mostrarModalCita = signal<boolean>(false);
   guardandoCita = signal<boolean>(false);
   mensajeFeedback = signal<{ tipo: 'exito' | 'error', texto: string } | null>(null);
 
-  // Doctores dinámicos desde la BD (Match con el HTML)
+  // Datos dinámicos
   odontologos = signal<any[]>([]);
   minFechaHora: string = '';
 
-  // Formulario reactivo
+  // Formulario reactivo estricto
   citaForm = this.fb.nonNullable.group({
     odontologoId: [0, [Validators.required, Validators.min(1)]],
     fechaHora: ['', Validators.required],
-    motivo: ['', Validators.required]
+    motivo: ['', [Validators.required, Validators.minLength(5)]]
   });
 
   ngOnInit() {
     this.establecerFechaMinima();
-    this.cargarOdontologos(); // Disparamos la búsqueda a PostgreSQL
+    this.cargarOdontologos();
 
-    // Obtener ID usuario SSR-safe
+    // Obtener ID usuario de forma segura (SSR-safe)
     let usuarioId = this.authService.getUsuarioId();
     if (!usuarioId && typeof window !== 'undefined') {
       usuarioId = Number(localStorage.getItem('user_id_cliente'));
     }
 
-    // Validar ID
     if (usuarioId && !isNaN(usuarioId)) {
       this.portalService.obtenerMiPerfil(usuarioId).subscribe({
         next: (perfil) => {
@@ -59,16 +58,14 @@ export class MisCitasComponent implements OnInit {
         },
         error: () => {
           this.cargando.set(false);
+          this.mostrarMensajeTemporal('error', 'No se pudo cargar la información del perfil.');
         }
       });
     } else {
-      if (typeof window !== 'undefined') {
-        this.cerrarSesion();
-      }
+      if (typeof window !== 'undefined') this.cerrarSesion();
     }
   }
 
-  // Traemos los médicos reales de nuestra API
   cargarOdontologos() {
     this.portalService.obtenerOdontologos().subscribe({
       next: (data) => this.odontologos.set(data),
@@ -77,17 +74,19 @@ export class MisCitasComponent implements OnInit {
   }
 
   establecerFechaMinima() {
-    // SSR Safe para fecha
     if (typeof window !== 'undefined') {
       const ahora = new Date();
+      // Ajuste de zona horaria para inputs datetime-local
       ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
       this.minFechaHora = ahora.toISOString().slice(0, 16);
     }
   }
 
   cargarMisCitas(pacienteId: number) {
+    this.cargando.set(true);
     this.portalService.misCitas(pacienteId).subscribe({
       next: (data) => {
+        // Orden cronológico: Más recientes primero
         const ordenadas = data.sort((a, b) => new Date(b.fechaHora).getTime() - new Date(a.fechaHora).getTime());
         this.citas.set(ordenadas);
         this.cargando.set(false);
@@ -97,10 +96,6 @@ export class MisCitasComponent implements OnInit {
       }
     });
   }
-
-  // =========================
-  // MODAL Y GESTIÓN DE CITAS
-  // =========================
 
   abrirModal() {
     this.citaForm.reset({ odontologoId: 0, fechaHora: '', motivo: '' });
@@ -133,14 +128,14 @@ export class MisCitasComponent implements OnInit {
       next: () => {
         this.guardandoCita.set(false);
         this.cargarMisCitas(this.paciente().id);
-        this.mostrarMensajeTemporal('exito', 'Cita agendada correctamente. Nos vemos pronto.');
-        setTimeout(() => this.cerrarModal(), 1500);
+        this.mostrarMensajeTemporal('exito', 'Su cita ha sido agendada correctamente. Nos vemos pronto.');
+        setTimeout(() => this.cerrarModal(), 2000); // Cierra tras 2 segundos de éxito
       },
       error: (err) => {
         this.guardandoCita.set(false);
         this.mensajeFeedback.set({
           tipo: 'error',
-          texto: err.error?.message || 'Error al agendar. Verifica disponibilidad o intenta con otra fecha.'
+          texto: err.error?.message || 'El especialista ya tiene una cita en ese horario. Por favor, elija otra hora.'
         });
       }
     });
@@ -151,24 +146,19 @@ export class MisCitasComponent implements OnInit {
     if (tipo === 'exito') {
       setTimeout(() => {
         this.mensajeFeedback.set(null);
-      }, 4000);
+      }, 5000);
     }
   }
-
-  // =========================
-  // DESCARGA PDF
-  // =========================
 
   descargarReceta(citaId: number) {
     this.portalService.descargarReceta(citaId).subscribe({
       next: (blob: Blob) => {
-        // SSR SAFE
         if (typeof window === 'undefined') return;
 
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Receta_Medica_Cita_${citaId}.pdf`;
+        a.download = `Receta_Medica_CN_${citaId}.pdf`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -176,9 +166,7 @@ export class MisCitasComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al descargar:', err);
-        if (typeof window !== 'undefined') {
-          alert('Lo sentimos, hubo un problema al descargar la receta. Es posible que el doctor aún no haya emitido el documento.');
-        }
+        this.mostrarMensajeTemporal('error', 'El documento no está disponible o el médico aún no lo ha emitido.');
       }
     });
   }
