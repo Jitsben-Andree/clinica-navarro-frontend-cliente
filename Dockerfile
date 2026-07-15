@@ -12,7 +12,7 @@ RUN npm run build -- --configuration production
 
 FROM nginx:1.25-alpine
 
-COPY --from=build /app/dist/clinica-navarro-frontend-admin/browser /usr/share/nginx/html
+COPY --from=build /app/dist/clinica-navarro-frontend-cliente/browser /usr/share/nginx/html
 
 
 RUN if [ -f /usr/share/nginx/html/index.csr.html ]; then mv /usr/share/nginx/html/index.csr.html /usr/share/nginx/html/index.html; fi
