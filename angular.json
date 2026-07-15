@@ -3,7 +3,7 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "a77f6302-4764-4ac3-954e-07132fa2796e"
+    "analytics": "448f13d0-3ff7-46c6-a034-2f5c083c62c5"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -25,18 +25,10 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
+            "styles": ["src/styles.css"],
             "security": {
               "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            },
-            "prerender": false
+            }
           },
           "configurations": {
             "production": {
@@ -66,10 +58,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "clinica-navarro-frontend-cliente:build:production"
+              "buildTarget": "clinica-navarro-frontend-admin:build:production"
             },
             "development": {
-              "buildTarget": "clinica-navarro-frontend-cliente:build:development"
+              "buildTarget": "clinica-navarro-frontend-admin:build:development"
             }
           },
           "defaultConfiguration": "development"
