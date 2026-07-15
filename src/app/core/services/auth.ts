@@ -6,7 +6,7 @@ import { environment } from '../../../environments/env';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private API_URL = `${environment.apiUrl}`
+  private API_URL = `${environment.apiUrl}`;
   private readonly apiUrl = `${this.API_URL}/auth`; 
   private readonly TOKEN_KEY = 'jwt_token';
 
@@ -24,7 +24,15 @@ export class AuthService {
 
   estaLogueado(): boolean {
     if (typeof window !== 'undefined') {
-      return !!localStorage.getItem(this.TOKEN_KEY);
+      const token = this.obtenerToken();
+      if (!token) return false;
+
+      // Si el token expiró, cerramos sesión automáticamente
+      if (this.isTokenExpired(token)) {
+        this.cerrarSesion();
+        return false;
+      }
+      return true;
     }
     return false;
   }
@@ -51,4 +59,26 @@ export class AuthService {
       localStorage.removeItem('user_id_cliente');
     }
   }
+
+  private isTokenExpired(token: string): boolean {
+  try {
+    const payloadBase64 = token.split('.')[1];
+    let base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // SOLUCIÓN: Rellenar con '=' para que la longitud sea múltiplo de 4
+    // Esto evita que window.atob se rompa al recargar la página
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    
+    const payload = JSON.parse(window.atob(base64));
+    
+    // Verificamos el tiempo
+    const expTime = payload.exp * 1000;
+    return Date.now() >= expTime;
+  } catch (error) {
+    console.error('Error al decodificar el token:', error);
+    return true; 
+  }
+}
 }

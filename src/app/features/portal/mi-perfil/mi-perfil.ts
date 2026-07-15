@@ -95,7 +95,7 @@ export class PerfilComponent implements OnInit {
     this.cargandoCodigo.set(true);
     this.mensajePass.set(null);
 
-    const url = 'http://localhost:8080/api/auth/forgot-password';
+    const url = 'http://217.216.94.194:8080/api/auth/forgot-password';
 
     this.http.post(url, { email: this.usuario().email }).subscribe({
       next: () => {
@@ -125,7 +125,7 @@ export class PerfilComponent implements OnInit {
       nuevaPassword: this.passwordForm.value.passwordNueva
     };
 
-    const url = 'http://localhost:8080/api/auth/reset-password';
+    const url = 'http://217.216.94.194:8080/api/auth/reset-password';
 
     this.http.post(url, request).subscribe({
       next: () => {
